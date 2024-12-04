@@ -1,6 +1,6 @@
 [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg)](https://semver.org)
 
-[![Demo](https://epionlineorders-dev.s3.us-east-2.amazonaws.com/assets/videos/android_demo.png)](https://epionlineorders-dev.s3.us-east-2.amazonaws.com/assets/videos/android_demo.mp4)
+[![Demo](https://epionlineorders-dev.s3.us-east-2.amazonaws.com/assets/videos/android_demo.png)]([https://epionlineorders-dev.s3.us-east-2.amazonaws.com/assets/videos/android_demo.mp4](https://github.com/user-attachments/assets/d2453ed3-5227-4b98-98f2-f822079e738e))
 
 # Procharge Lib
 If you are interested in processing payments with Electronic Payments click here [Merchant Signup][merchant-signup] to start the process.

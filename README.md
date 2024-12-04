@@ -1,4 +1,5 @@
 [![version](https://img.shields.io/badge/version-1.0.0-yellow.svg)](https://semver.org)
+[![Demo](<video loop src="(https://github.com/user-attachments/assets/85cc75c2-ca9a-409d-9ae3-eb3ab9f66b7c)">Demo</video>)]
 
 https://github.com/user-attachments/assets/85cc75c2-ca9a-409d-9ae3-eb3ab9f66b7c
 

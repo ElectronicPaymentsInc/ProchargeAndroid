@@ -36,6 +36,7 @@ android {
     buildFeatures {
         compose = true
     }
+    buildToolsVersion = "35.0.0"
 }
 
 val ktorVersion: String by project

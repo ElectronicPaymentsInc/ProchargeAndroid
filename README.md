@@ -112,7 +112,6 @@ import com.electronicpaymentsinc.procharge.*
                 
 fun getToken(): AuthResponse = runBlocking {
     val env = Environment().Development
-    println(env)
 
     val engine = OkHttp.create()
     val client = Client(env, engine, null)

@@ -117,7 +117,7 @@ class MainViewModel : ViewModel() {
             taxAmount = taxAmount,
             tipAmount = "0.00",
             cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
-            cardNumber = cardNumber.toString(),
+            cardNumber = cardNumber,
             ccExpMonth = expMonth,
             ccExpYear = expYear,
             cvv = "100",    // <-- Only set if performing cvv verification
@@ -126,7 +126,6 @@ class MainViewModel : ViewModel() {
         )
 
         val resp = client.processSale(transaction)
-        // MainActivity.amount = resp.cygmaResponse?.TransactionAmount.toString().padStart(12, '0')
         return@runBlocking resp
     }
 
@@ -143,24 +142,23 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        transaction.cardNotPresent = true
-        //transaction.amount = response.cygmaResponse?.TransactionAmount.toString().padStart(12, '0')
-        transaction.amount = amount
-        transaction.taxAmount = taxAmount
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.transactionID = saleResponse.transactionIdentifier // <-- Transaction ID from original sale
-        transaction.approvalCode = saleResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
-        transaction.paymentID = saleResponse.paymentID
-        transaction.creditID = saleResponse.creditID
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            cardNotPresent = true,
+            amount = amount,
+            taxAmount = taxAmount,
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber,
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            transactionID = saleResponse.transactionIdentifier, // <-- Transaction ID from original sale
+            approvalCode = saleResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+            paymentID = saleResponse.paymentID,
+            creditID = saleResponse.creditID
+        )
 
         val resp = client.voidSale(transaction)
         return@runBlocking resp
@@ -179,20 +177,20 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        transaction.amount = amount
-        transaction.taxAmount = taxAmount
-        transaction.tipAmount = "0.00"
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.orderNumber = "123456"
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            amount = amount,
+            taxAmount = taxAmount,
+            tipAmount = "0.00",
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber.toString(),
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            orderNumber = "123456"
+        )
 
         val resp = client.authorizeOnly(transaction)
         return@runBlocking resp
@@ -211,20 +209,19 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        //transaction.amount = authOnlyResponse.cygmaResponse?.TransactionAmount.toString().padStart(12, '0')
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.transactionID = authOnlyResponse.transactionIdentifier // <-- Transaction ID from original sale
-        transaction.approvalCode = authOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
-        transaction.paymentID = authOnlyResponse.paymentID
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber.toString(),
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            transactionID = authOnlyResponse.transactionIdentifier, // <-- Transaction ID from original sale
+            approvalCode = authOnlyResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+            paymentID = authOnlyResponse.paymentID
+        )
 
         val resp = client.voidAuthOnly(transaction)
         return@runBlocking resp
@@ -243,21 +240,21 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        transaction.amount = amount
-        transaction.taxAmount = taxAmount
-        transaction.tipAmount = "0.00"
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.transactionID = authOnlyResponse.transactionIdentifier // <-- Transaction ID from original sale
-        transaction.approvalCode = authOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            amount = amount,
+            taxAmount = taxAmount,
+            tipAmount = "0.00",
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber.toString(),
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            transactionID = authOnlyResponse.transactionIdentifier, // <-- Transaction ID from original sale
+            approvalCode = authOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
+        )
 
         val resp = client.completeTicket(transaction)
         return@runBlocking resp
@@ -276,21 +273,20 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        //transaction.amount = response.cygmaResponse?.TransactionAmount.toString().padStart(12, '0')
-        transaction.tipAmount = "0.00"
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.transactionID = ticketOnlyResponse.transactionIdentifier // <-- Transaction ID from original sale
-        transaction.approvalCode = ticketOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
-        transaction.paymentID = ticketOnlyResponse.paymentID
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            tipAmount = "0.00",
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber,
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            transactionID = ticketOnlyResponse.transactionIdentifier, // <-- Transaction ID from original sale
+            approvalCode = ticketOnlyResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+            paymentID = ticketOnlyResponse.paymentID
+        )
 
         val resp = client.voidTicketOnly(transaction)
         return@runBlocking resp
@@ -309,18 +305,18 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        transaction.amount = amount
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.orderNumber = "123456"
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            amount = amount,
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber,
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            orderNumber = "123456"
+        )
 
         val resp = client.processRefund(transaction)
         return@runBlocking resp
@@ -339,20 +335,51 @@ class MainViewModel : ViewModel() {
         val engine = OkHttp.create()
         val client = Client(env, engine, security)
 
-        val transaction = Transaction()
-        // transaction.isDeviceTerminal = true // uncomment if processing from pax, dejavoo, ingenico and etc
-        transaction.isProcharge = true
-        transaction.isEcommerce = true
-        transaction.cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        transaction.cardNumber = cardNumber.toString()
-        transaction.ccExpMonth = expMonth
-        transaction.ccExpYear = expYear
-        transaction.cvv = "100"    // <-- Only set if performing cvv verification
-        transaction.aci = "N"      // <-- Only set if performing avs verification
-        transaction.transactionID = refundResponse.transactionIdentifier // <-- Transaction ID from original sale
-        transaction.approvalCode = refundResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
-        transaction.paymentID = refundResponse.paymentID
-        transaction.creditID = refundResponse.creditID
+        val transaction = Transaction(
+            isProcharge = true,
+            isEcommerce = true,
+            cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+            cardNumber = cardNumber,
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            aci = "N",      // <-- Only set if performing avs verification
+            transactionID = refundResponse.transactionIdentifier, // <-- Transaction ID from original sale
+            approvalCode = refundResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+            paymentID = refundResponse.paymentID,
+            creditID = refundResponse.creditID
+        )
+
+        val resp = client.voidRefund(transaction)
+        return@runBlocking resp
+    }
+
+    fun prePaidBalanceInquiry(authData: AuthResponse): TransactionResponse = runBlocking {
+        val env = Environment().Development
+
+        val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+        val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+        val apiKey = "$k1.$k2.$k3"
+
+        val security = Security(authData.access_token, authData.refresh_token, apiKey)
+
+        val engine = OkHttp.create()
+        val client = Client(env, engine, security)
+
+        val transaction = Transaction(
+            isEcommerce = true,
+            cardNumber = cardNumber,
+            ccExpMonth = expMonth,
+            ccExpYear = expYear,
+            cvv = "100",    // <-- Only set if performing cvv verification
+            amount = "0.00",
+            taxAmount = "0.00",
+            aci = "N",
+            isPurchaseCard = true,
+            cardNotPresent = true,
+            cardTypeIndicator = "P"    // C - Credit, D - Debit, P - Debit PrePaid
+        )
 
         val resp = client.voidRefund(transaction)
         return@runBlocking resp

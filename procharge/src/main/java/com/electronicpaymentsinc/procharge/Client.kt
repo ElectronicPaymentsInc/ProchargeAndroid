@@ -249,9 +249,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -390,9 +387,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -548,9 +542,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -681,9 +672,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -853,9 +841,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -987,9 +972,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1141,9 +1123,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1275,9 +1254,6 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                     json(
                         Json {
                             encodeDefaults = true
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1413,9 +1389,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1540,9 +1514,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1640,9 +1612,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1746,9 +1716,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1852,9 +1820,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )
@@ -1964,9 +1930,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )
@@ -2070,9 +2034,7 @@ class Client (private var env: String, private var engine: HttpClientEngine?, pr
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            serializersModule = SerializersModule {
-                                contextual(LocalDateTime::class, LocalDateSerializer)
-                            }
+                            encodeDefaults = true
                             ignoreUnknownKeys = true
                         }
                     )

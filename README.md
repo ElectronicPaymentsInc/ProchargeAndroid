@@ -98,10 +98,7 @@ dependencies {
 >
 > import com.electronicpaymentsinc.procharge.*
 >
-> let client = new Client({
->                         ....
->                         authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
->                        });
+> val client = Client(env, engine, null)
 >
 > Use the below application key in all calls:
 >
@@ -110,444 +107,469 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDc
 ```
 ___
 
-```js
-import { Client, Environment, AuthResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
                 
-let client = new Client({
-    env: Environment.Development
-});
+fun getToken(): AuthResponse = runBlocking {
+    val env = Environment().Development
+    println(env)
 
-let response: AuthResponse = await client.getAccessToken({
-  "userName": "johndoe",
-  "passWord": "Test1234",
-  "pin": "12345678",
-  "application": "procharge"
-}).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as AuthResponse;
-
-if(!response) {
-    return;
-} else {
-    console.log("access_token: " + response.access_token);
-    console.log("refresh_token: " + response.refresh_token);
-    return resolve(response);
-}  
+    val engine = OkHttp.create()
+    val client = Client(env, engine, null)
+    val creds = Credentials("johndoe", "Test1234", "12345678", "procharge-mobile")
+    val resp = client.getAccessToken(creds)
+    return@runBlocking resp
+}
 ```
 
 ## Refresh Token
 Pass refreshToken from previous call to getAccessToken to retrieve a new access_token and refresh_token.
-```js
-import { Client, Environment, AuthResponse } from "procharge";
-                
-let client = new Client({
-    env: Environment.Development
-});
+```kotlin
+fun getRefreshToken(token: String): AuthResponse = runBlocking {
+    val env = Environment().Development
 
-let response: AuthResponse = await client.getRefreshToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9......").catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as AuthResponse;
-
-if(!response) {
-    return;
-} else {
-    console.log("access_token: " + response.access_token);
-    console.log("refresh_token: " + response.refresh_token);
-    return resolve(response)
-}  
+    val engine = OkHttp.create()
+    val client = Client(env, engine, null)
+    val resp = client.getRefreshToken(token)
+    return@runBlocking resp
+}
 ```
 
 ## Sale
 
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
               
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun processSale(authData: AuthResponse): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.amount = "0.05";
-transaction.taxAmount = "0.01";
-transaction.tipAmount = "0.00";
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.cardNumber = "5204730000001003";
-transaction.ccExpMonth = "12";
-transaction.ccExpYear = "25";
-transaction.cvv = "100";    // <-- Only set if performing cvv verification
-transaction.aci = "Y";      // <-- Only set if performing avs verification
-transaction.name = "John Doe";
-transaction.street1 = "7305 test street";
-transaction.street2 = "";
-transaction.city = "Omaha";
-transaction.state = "NE";
-transaction.postalCode = "68114";
-transaction.email = "jdoe@widget.com";
-transaction.companyName = "Joes Moving Company";
-transaction.orderNumber = "123456";
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.processSale(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction( 
+        isProcharge = true,
+        isEcommerce = true,
+        amount = "0.10",
+        taxAmount = taxAmount,
+        tipAmount = "0.01",
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        orderNumber = "123456"
+    )
+
+    val resp = client.processSale(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Void Sale
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
-                
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.transactionID = "429811000636";
-transaction.approvalCode = "097502";
+fun voidSale(authData: AuthResponse, saleResponse: TransactionResponse): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let response: TransactionResponse = await client.voidSale(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
+
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        cardNotPresent = true,
+        amount = "0.10",
+        taxAmount = "0.01",
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        transactionID = saleResponse.transactionIdentifier, // <-- Transaction ID from original sale
+        approvalCode = saleResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+        paymentID = saleResponse.paymentID,
+        creditID = saleResponse.creditID
+    )
+
+    val resp = client.voidSale(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Auth Only
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
-                
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.amount = "0.05";
-transaction.cardNumber = "5204730000001003";
-transaction.ccExpMonth = "12";
-transaction.ccExpYear = "25";
-transaction.cvv = "100";    // <-- Only set if performing cvv verification
-transaction.aci = "Y";      // <-- Only set if performing avs verification
-transaction.name = "John Doe";
-transaction.street1 = "7305 test street";
-transaction.street2 = "";
-transaction.city = "Omaha";
-transaction.state = "NE";
-transaction.postalCode = "68114";
-transaction.email = "jdoe@widget.com";
-transaction.companyName = "Joes Moving Company";
-transaction.orderNumber = "123456";
+fun processAuthOnly(authData: AuthResponse, amount: String, taxAmount: String): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let response: TransactionResponse = await client.authorizeOnly(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
+
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        amount = "0.10",
+        taxAmount = "0.01",
+        tipAmount = "0.00",
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        orderNumber = "123456"
+    )
+
+    val resp = client.authorizeOnly(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Void Auth Only
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
-               
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.transactionID = "429811000636";
-transaction.approvalCode = "097502";
-transaction.invoiceID = 447803694;
-transaction.paymentID = 447857739;
-transaction.cardNotPresent = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
+fun voidAuthOnly(authData: AuthResponse, authOnlyResponse: TransactionResponse ): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let response: TransactionResponse = await client.voidAuthOnly(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
+
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true
+        isEcommerce = true
+        cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003"
+        ccExpMonth = "12"
+        ccExpYear = "25"
+        cvv = "100"    // <-- Only set if performing cvv verification
+        aci = "N"      // <-- Only set if performing avs verification
+        transactionID = authOnlyResponse.transactionIdentifier // <-- Transaction ID from original sale
+        approvalCode = authOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
+        paymentID = authOnlyResponse.paymentID
+    )
+
+    val resp = client.voidAuthOnly(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Ticket Completion
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
-        
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.transactionID = "429811000636";    
-transaction.approvalCode = "097502";
-transaction.invoiceID = 447803694;
-transaction.paymentID = 447857739;
-transaction.cardNotPresent = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.amount = "0.05";
-transaction.taxAmount = "0.01";
+fun processTicket(authData: AuthResponse, authOnlyResponse: TransactionResponse, amount: String, taxAmount: String ): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let response: TransactionResponse = await client.completeTicket(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
+
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        amount = amount,
+        taxAmount = taxAmount,
+        tipAmount = "0.00",
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        transactionID = authOnlyResponse.transactionIdentifier, // <-- Transaction ID from original sale
+        approvalCode = authOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
+    )
+
+    val resp = client.completeTicket(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Void Ticket
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun voidTicket(authData: AuthResponse, ticketOnlyResponse: TransactionResponse): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.transactionID = "429811000636";
-transaction.approvalCode = "097502";
-transaction.cardNotPresent = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.voidTicketOnly(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
-}        
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        tipAmount = "0.00",
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        transactionID = ticketOnlyResponse.transactionIdentifier, // <-- Transaction ID from original sale
+        approvalCode = ticketOnlyResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+        paymentID = ticketOnlyResponse.paymentID
+    )
+
+    val resp = client.voidTicketOnly(transaction)
+    return@runBlocking resp
+}      
 ```
 
 ## Refund
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun processRefund(authData: AuthResponse, amount: String): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.amount = "0.05";
-transaction.taxAmount = "0.01";
-transaction.tipAmount = "0.00";
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.cardNumber = "5204730000001003";
-transaction.ccExpMonth = "12";
-transaction.ccExpYear = "25";
-transaction.cvv = "100";                // <-- Only set if performing cvv verification
-transaction.aci = "N";                  // <-- No avs verification on refunds
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.processRefund(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        amount = "0.10",
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        orderNumber = "123456"
+    )
+
+    val resp = client.processRefund(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Void Refund
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun voidRefund(authData: AuthResponse, refundResponse: TransactionResponse ): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.transactionID = "429811000636";
-transaction.approvalCode = "097502";
-transaction.cardNotPresent = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.voidRefund(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
-}        
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        transactionID = refundResponse.transactionIdentifier, // <-- Transaction ID from original sale
+        approvalCode = refundResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
+        paymentID = refundResponse.paymentID,
+        creditID = refundResponse.creditID
+    )
+
+    val resp = client.voidRefund(transaction)
+    return@runBlocking resp
+}
+     
 ```
 
 ## PrePaid Balance Inquiry
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun prePaidBalanceInquiry(authData: AuthResponse, refundResponse: TransactionResponse ): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.cardNumber = "5204730000001003";
-transaction.ccExpMonth = "12";
-transaction.ccExpYear = "30";
-transaction.cvv = "100";
-transaction.amount = "0.00";
-transaction.taxAmount = "0.00";
-transaction.aci = "N";
-transaction.isPurchaseCard = true;
-transaction.cardNotPresent = true;
-transaction.cardTypeIndicator = "P";    // C - Credit, D - Debit, P - Debit PrePaid 
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.prePaidBalanceInquiry(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isProcharge = true,
+        isEcommerce = true,
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "30",
+        cvv = "100",
+        amount = "0.00",
+        taxAmount = "0.00",
+        aci = "N",
+        isPurchaseCard = true,
+        cardNotPresent = true,
+        cardTypeIndicator = "P"    // C - Credit, D - Debit, P - Debit PrePaid 
+    )
+
+    val resp = client.prePaidBalanceInquiry(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Validate Card
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun validateCard(authData: AuthResponse, refundResponse: TransactionResponse ): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isEcommerce = true;
-transaction.amount = "0.00";        // <-- Leave 0.00 amount for validation
-transaction.taxAmount = "0.00";     // <-- Leave 0.00 amount for validation
-transaction.tipAmount = "0.00";
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.aci = "Y";                  // <-- Only set if performing avs verification
-transaction.name = "John Doe";
-transaction.street1 = "7305 test street";
-transaction.postalCode = "68114";
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.validateCard(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = Transaction(
+        isEcommerce = true;
+        amount = "0.00";        // <-- Leave 0.00 amount for validation
+        taxAmount = "0.00";     // <-- Leave 0.00 amount for validation
+        tipAmount = "0.00";
+        cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
+        aci = "Y";                  // <-- Only set if performing avs verification
+        name = "John Doe";
+        street1 = "7305 test street";
+        postalCode = "68114"
+    )
+
+    val resp = client.validateCard(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## EMV
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun processSale(authData: AuthResponse, amount: String, taxAmount: String): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isRetail = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.emv = "5F2A020840820258008407A0000000031010950502800080009A031806259C01009F02060000000020009F03060000000000009F0902008C9F100706011203A000009F1A0208409F1E0832343437383135335F24032212319F2608B4E599A67DD0828E9F2701809F3303E0F8C89F34031E03009F3501229F360200029F3704B71461199F4104000006755F340101";
-transaction.aci = "N";
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.processSale(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    // Note! If using bbpos reader the emv data will be encrypted otherwise omit deviceModel
+    val transaction = Transaction( 
+        isProcharge = true,
+        isRetail = true,
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid 
+        deviceModel = "CHB",        // BBPOS Reader, omit if not using
+        emv = "5F2A020840820258008407A0000000031010950502800080009A031806259C01009F02060000000020009F03060000000000009F0902008C9F100706011203A000009F1A0208409F1E0832343437383135335F24032212319F2608B4E599A67DD0828E9F2701809F3303E0F8C89F34031E03009F3501229F360200029F3704B71461199F4104000006755F340101",
+        aci = "N"
+    )
+
+    val resp = client.processSale(transaction)
+    return@runBlocking resp
 }
 ```
 
 ## Swiped Sale
-```js
-import { Client, Environment, Transaction, TransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun processSale(authData: AuthResponse, amount: String, taxAmount: String): TransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: Transaction = new Transaction();
-transaction.isRetail = true;
-transaction.cardTypeIndicator = "C";    // C - Credit, D - Debit, P - Debit PrePaid 
-transaction.trackData = "5204730000001003D25122010000000000000";
-transaction.aci = "N";
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: TransactionResponse = await client.processSale(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as TransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    // Note! If using bbpos reader the emv data will be encrypted otherwise omit deviceModel
+    val transaction = Transaction( 
+        isProcharge = true,
+        isRetail = true,
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid 
+        deviceModel = "CHB",        // BBPOS Reader Omit if not using bbpos reder
+        trackData = "5204730000001003D25122010000000000000",
+        aci = "N"
+    )
+
+    val resp = client.processSale(transaction)
+    return@runBlocking resp
 }
 ```
 ## Gift Cards
@@ -589,142 +611,157 @@ if(!response) {
 > ***
 
 ### Gift Card Activation
-```js
-import { Client, Environment, GiftCardTransaction, GiftCardTransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun activateGiftCard(authData: AuthResponse): GiftCardTransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: GiftCardTransaction = new GiftCardTransaction();
-transaction.track2 = "6265555707036313=0000";
-transaction.entryMode = "1";
-transaction.industryType = "1"; 
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: GiftCardTransactionResponse = await client.activateGiftCard(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as GiftCardTransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = GiftCardTransaction(
+        isProcharge = true,
+        track2 = "6265555707036313=0000",
+        entryMode = "1",
+        industryType = "1"
+    )
+
+    val resp = client.activateGiftCard(transaction)
+    return@runBlocking resp
 }
 ```
 
 ### Redeem Gift Card
-```js
-import { Client, Environment, GiftCardTransaction, GiftCardTransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun redeemGiftCard(authData: AuthResponse): GiftCardTransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: GiftCardTransaction = new GiftCardTransaction();
-transaction.track2 = "6265555707036313=0000";
-transaction.entryMode = "1";
-transaction.industryType = "1";
-transaction.amount = 0.05;
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: GiftCardTransactionResponse = await client.redeemGiftCard(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as GiftCardTransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = GiftCardTransaction(
+        isProcharge = true,
+        track2 = "6265555707036313=0000";
+        entryMode = "1";
+        industryType = "1";
+        amount = 0.05;
+    )
+
+    val resp = client.redeemGiftCard(transaction)
+    return@runBlocking resp
 }
 ```
 
 ### Gift Card Balance Transfer
-```js
-import { Client, Environment, GiftCardTransaction, GiftCardTransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun transferGiftCardBalance(authData: AuthResponse): GiftCardTransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: GiftCardTransaction = new GiftCardTransaction();
-transaction.fromCardNo = "6265555707036313";
-transaction.cardNo = "6609603310096204";
-transaction.entryMode = "2";
-transaction.industryType = "1";
-transaction.amount = 5.00;
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: GiftCardTransactionResponse = await client.transferGiftCardBalance(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as GiftCardTransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = GiftCardTransaction(
+        isProcharge = true,
+        fromCardNo = "6265555707036313",
+        cardNo = "6609603310096204",
+        entryMode = "2",
+        industryType = "1",
+        amount = 5.00
+    )
+
+    val resp = client.transferGiftCardBalance(transaction)
+    return@runBlocking resp
 }
 ```
 
 ### Gift Card Balance Inquiry
-```js
-import { Client, Environment, GiftCardTransaction, GiftCardTransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun giftCardBalanceInquiry(authData: AuthResponse): GiftCardTransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: GiftCardTransaction = new GiftCardTransaction();
-transaction.track2 = "6265555707036313=0000";
-transaction.entryMode = "1";
-transaction.industryType = "1";
-transaction.amount = 0.00;
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: GiftCardTransactionResponse = await client.giftCardBalanceInquiry(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as GiftCardTransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = GiftCardTransaction(
+        isProcharge = true,
+        track2 = "6265555707036313=0000",
+        entryMode = "1",
+        industryType = "1",
+        amount = 0.00
+    )
+
+    val resp = client.giftCardBalanceInquiry(transaction)
+    return@runBlocking resp
 }
 ```
 
 ### Gift Card Void
-```js
-import { Client, Environment, GiftCardTransaction, GiftCardTransactionResponse } from "procharge";
+```kotlin
+import com.electronicpaymentsinc.procharge.*
 
-let client = new Client({
-    env: Environment.Development,
-    applicationKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ.PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk",
-    authToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-});
+fun voidGiftCardSale(authData: AuthResponse): GiftCardTransactionResponse = runBlocking {
+    val env = Environment().Development
 
-let transaction: GiftCardTransaction = new GiftCardTransaction();
-transaction.entryMode = "2";
-transaction.industryType = "1";
-transaction.amount = 1.00;
-transaction.transactionID = "255410";
+    // note! the api key was broken up only due to github raing a warning over jwt web tokens
+    val k1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    val k2 = "eyJtb2RlIjoiZyIsIm1pZCI6Ijg4OTkwMTU1MDU5NDcwMiIsInRva2VuIjoiIiwicm9sZXMiOlsidXNlciIsIm1lcmNoYW50IiwicHJvY2hhcmdlIl0sInBheWxvYWQiOnsiYXBpS2V5T25seSI6dHJ1ZSwiZGV2ZWxvcG1lbnRPbmx5Ijp0cnVlLCJyb3V0ZU5hbWUiOiJwcm9jaGFyZ2UifSwiaWF0IjoxNzMwNDkyMTY0fQ"
+    val k3 = "PWEaR00Cjc7ld2D9KCol5B4SI1up_9BQSMpCXWoZwhk"
+    val apiKey = "$k1.$k2.$k3"
 
-let response: GiftCardTransactionResponse = await client.voidGiftCardSale(transaction).catch((error: any) => {
-    console.log(error);
-    reject(error);
-}) as GiftCardTransactionResponse;
+    val security = Security(authData.access_token, authData.refresh_token, apiKey)
 
-if(!response) {
-    return;
-} else {
-    return resolve(response)
+    val engine = OkHttp.create()
+    val client = Client(env, engine, security)
+
+    val transaction = GiftCardTransaction(
+        isProcharge = true,
+        entryMode = "2",
+        industryType = "1",
+        amount = 1.00,
+        transactionID = "255410"
+    )
+
+    val resp = client.voidGiftCardSale(transaction)
+    return@runBlocking resp
 }
 ```
 
@@ -736,8 +773,4 @@ if(!response) {
 
 [secure2]: https://secure2.procharge.com
 [api-documentation]: https://dev-api.procharge.com/api/developers
-[nodejs-http2]: https://nodejs.org/api/http2.html#client-side-example
-[nodejs-windows-download]: https://nodejs.org/en
-[nodejs-pkg-manager]: https://nodejs.org/en/download/package-manager
-[yarn]: https://yarnpkg.com/search?q=procharge
 [version]: 1.0.27

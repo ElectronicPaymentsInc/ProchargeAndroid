@@ -70,7 +70,7 @@ class MainViewModel : ViewModel() {
     var totalTime = ""
 
     var cardNumber = "5204730000001003"
-
+    var cvv = "100"
     var expMonth = "12"
     var expYear = "25"
     var amount = "0.01"
@@ -408,6 +408,7 @@ fun MainView(viewModel: MainViewModel, modifier: Modifier = Modifier, decimalFor
     var totalTime by rememberSaveable { mutableStateOf(viewModel.totalTime) }
 
     var cardNumber by remember { mutableStateOf(viewModel.cardNumber) }
+    var cvv by remember { mutableStateOf(viewModel.cvv) }
     var expMonth by remember { mutableStateOf(viewModel.expMonth) }
     var expYear by remember { mutableStateOf(viewModel.expYear) }
 
@@ -453,6 +454,38 @@ fun MainView(viewModel: MainViewModel, modifier: Modifier = Modifier, decimalFor
             )
         }
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+            ) {
+                OutlinedTextField(
+                    value = cvv,
+                    onValueChange = {
+                        viewModel.cvv = decimalFormatter.cleanup(it)
+                        cvv = viewModel.cvv
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    modifier = Modifier
+                        .padding(
+                            top = 10.dp,
+                            start = 10.dp,
+                            end = 12.dp,
+                            bottom = 4.dp
+                        )
+                        .fillMaxWidth(),
+                    label = { Text("CVV") },
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
+                )
+            }
+        }
         // Exp Month and Year
         Row(
             modifier = Modifier

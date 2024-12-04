@@ -17,7 +17,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
@@ -30,7 +29,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,13 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
-import com.electronicpaymentsinc.procharge.Environment
-import com.electronicpaymentsinc.procharge.Credentials
-import com.electronicpaymentsinc.procharge.AuthResponse
-import com.electronicpaymentsinc.procharge.Client
-import com.electronicpaymentsinc.procharge.Security
-import com.electronicpaymentsinc.procharge.Transaction
-import com.electronicpaymentsinc.procharge.TransactionResponse
+import com.electronicpaymentsinc.procharge.*
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -650,6 +642,7 @@ fun MainView(viewModel: MainViewModel, modifier: Modifier = Modifier, decimalFor
                             enableTicketButton = false
                             enableVoidTicketButton = false
                             enableVoidRefundButton = false
+                            enableRefundButton = false
 
                             viewModel.isRunning = true
 

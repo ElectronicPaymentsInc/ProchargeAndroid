@@ -36,7 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
-import com.electronicpaymentsinc.procharge.*
+//import com.electronicpaymentsinc.procharge.*
+import com.electronicpaymentsinc.prochargelib.* // JAR lib
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString

@@ -64,9 +64,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    //implementation(project(":procharge"))  // uncomment to use project directly
+    //implementation(project(":prochargelib"))  // uncomment to use jar project directly
+    //implementation(files("../prochargelib/src/libs/prochargelib.jar"))            // uncomment to link jar file
+
+    implementation(project(":procharge"))  // uncomment to use project directly
     //implementation(files("../procharge/src/libs/procharge-debug.aar"))            // uncomment to link debug library
-    implementation(files("../procharge/src/libs/procharge-release.aar"))    // uncomment to link release library
+    //implementation(files("../procharge/src/libs/procharge-release.aar"))    // uncomment to link release library
     implementation(libs.material)
     implementation(libs.androidx.library)
 

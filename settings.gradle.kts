@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "ProchargeApp"
 include(":app")
 include(":procharge")
+include(":prochargelib")

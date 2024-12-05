@@ -2,13 +2,20 @@
 
 https://github.com/user-attachments/assets/0b4a0ed5-1339-4ba0-9992-0472983670ab
 
-# Procharge Lib
+# Payment processing with procharge android library
 If you are interested in processing payments with Electronic Payments click here [Merchant Signup][merchant-signup] to start the process.
 
 ## Description
 Android archive library for payment processing with Electronic Payments Procharge API.
 
-Use this AAR library to process sales, authorizations, ticket captures, voids, refunds and balance inquiries with Procharge.
+## Project Modules
+### procharge
+> This module will output an AAR file
+
+### prochargelib
+> This module will output a JAR file
+
+Use either the aar or jar library within your android app to process sales, authorizations, ticket captures, voids, refunds and balance inquiries with Procharge.
 
 * [Requirements](#requirements)
 * [Installation](#installation)

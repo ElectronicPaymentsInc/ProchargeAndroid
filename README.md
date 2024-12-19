@@ -46,11 +46,11 @@ Within the [Procharge API Documentation][api-documentation] there is a list of m
 Credit card transactions can be mocked by sending mockApproval or mockDecline as true in the request. Use this option to avoid charges against your credit card.
 When submitting mockApproval or mockDecline in the request you will be provided with a fake transaction identifier and authorization number in the response.
 
-Mock Approval example
+Mock Approval Example:
 
 transaction.mockApproval = true
 
-Mock Decline example
+Mock Decline Example:
 
 transaction.mockDecline = true
 

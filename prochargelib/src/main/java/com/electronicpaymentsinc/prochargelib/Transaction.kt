@@ -156,6 +156,8 @@ data class Transaction @OptIn(ExperimentalSerializationApi::class) constructor(
     var secureProtocolVerNum3D: String? = "",  // visa only - 3DS Protocol Version Number
     var customerID: Long = 0,
     var creditID: Long = 0,
+    var mockApproval: Boolean = false,
+    var mockDecline: Boolean = false,
     var items: List<ReceiptItem> = emptyList<ReceiptItem>(),
     var retailItems: List<RetailItem> = emptyList<RetailItem>(),
     var retailIndustry: RetailMoto = RetailMoto(),

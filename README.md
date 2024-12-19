@@ -47,9 +47,11 @@ Credit card transactions can be mocked by sending mockApproval or mockDecline as
 When submitting mockApproval or mockDecline in the request you will be provided with a fake transaction identifier and authorization number in the response.
 
 Mock Approval example
+
 transaction.mockApproval = true
 
 Mock Decline example
+
 transaction.mockDecline = true
 
 ## gradle.properties (root)

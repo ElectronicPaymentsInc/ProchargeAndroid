@@ -42,6 +42,16 @@ All the below examples are using a sandbox merchant number and credit card.
 
 Within the [Procharge API Documentation][api-documentation] there is a list of mock card numbers you can use for sandbox testing.
 
+## Mocking A Response
+Credit card transactions can be mocked by sending mockApproval or mockDecline as true in the request. Use this option to avoid charges against your credit card.
+When submitting mockApproval or mockDecline in the request you will be provided with a fake transaction identifier and authorization number in the response.
+
+Mock Approval example
+transaction.mockApproval = true
+
+Mock Decline example
+transaction.mockDecline = true
+
 ## gradle.properties (root)
 ```kotlin
 ktorVersion = 3.0.2
@@ -163,6 +173,8 @@ fun processSale(authData: AuthResponse): TransactionResponse = runBlocking {
     val transaction = Transaction( 
         isProcharge = true,
         isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
         amount = "0.10",
         taxAmount = taxAmount,
         tipAmount = "0.01",
@@ -202,6 +214,8 @@ fun voidSale(authData: AuthResponse, saleResponse: TransactionResponse): Transac
         isProcharge = true,
         isEcommerce = true,
         cardNotPresent = true,
+        mockApproval = false,
+        mockDecline = false,
         amount = "0.10",
         taxAmount = "0.01",
         cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
@@ -241,6 +255,8 @@ fun processAuthOnly(authData: AuthResponse, amount: String, taxAmount: String): 
     val transaction = Transaction(
         isProcharge = true,
         isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
         amount = "0.10",
         taxAmount = "0.01",
         tipAmount = "0.00",
@@ -276,16 +292,18 @@ fun voidAuthOnly(authData: AuthResponse, authOnlyResponse: TransactionResponse )
     val client = Client(env, engine, security)
 
     val transaction = Transaction(
-        isProcharge = true
-        isEcommerce = true
-        cardTypeIndicator = "C"    // C - Credit, D - Debit, P - Debit PrePaid
-        cardNumber = "5204730000001003"
-        ccExpMonth = "12"
-        ccExpYear = "25"
-        cvv = "100"    // <-- Only set if performing cvv verification
-        aci = "N"      // <-- Only set if performing avs verification
-        transactionID = authOnlyResponse.transactionIdentifier // <-- Transaction ID from original sale
-        approvalCode = authOnlyResponse.authorizationNumber  // <-- Approval/Authorization code from original sale
+        isProcharge = true,
+        isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
+        cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
+        cardNumber = "5204730000001003",
+        ccExpMonth = "12",
+        ccExpYear = "25",
+        cvv = "100",    // <-- Only set if performing cvv verification
+        aci = "N",      // <-- Only set if performing avs verification
+        transactionID = authOnlyResponse.transactionIdentifier, // <-- Transaction ID from original sale
+        approvalCode = authOnlyResponse.authorizationNumber,  // <-- Approval/Authorization code from original sale
         paymentID = authOnlyResponse.paymentID
     )
 
@@ -314,6 +332,8 @@ fun processTicket(authData: AuthResponse, authOnlyResponse: TransactionResponse,
     val transaction = Transaction(
         isProcharge = true,
         isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
         amount = amount,
         taxAmount = taxAmount,
         tipAmount = "0.00",
@@ -352,6 +372,8 @@ fun voidTicket(authData: AuthResponse, ticketOnlyResponse: TransactionResponse):
     val transaction = Transaction(
         isProcharge = true,
         isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
         tipAmount = "0.00",
         cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
         cardNumber = "5204730000001003",
@@ -389,6 +411,8 @@ fun processRefund(authData: AuthResponse, amount: String): TransactionResponse =
     val transaction = Transaction(
         isProcharge = true,
         isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
         amount = "0.10",
         cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
         cardNumber = "5204730000001003",
@@ -424,6 +448,8 @@ fun voidRefund(authData: AuthResponse, refundResponse: TransactionResponse ): Tr
     val transaction = Transaction(
         isProcharge = true,
         isEcommerce = true,
+        mockApproval = false,
+        mockDecline = false,
         cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid
         cardNumber = "5204730000001003",
         ccExpMonth = "12",
@@ -535,8 +561,10 @@ fun processSale(authData: AuthResponse, amount: String, taxAmount: String): Tran
     val transaction = Transaction( 
         isProcharge = true,
         isRetail = true,
+        mockApproval = false,
+        mockDecline = false,
         cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid 
-        deviceModel = "CHB",        // BBPOS Reader, omit if not using
+        deviceModel = "CHB",        // BBPOS Reader, omit if not using the bbpos reader
         emv = "5F2A020840820258008407A0000000031010950502800080009A031806259C01009F02060000000020009F03060000000000009F0902008C9F100706011203A000009F1A0208409F1E0832343437383135335F24032212319F2608B4E599A67DD0828E9F2701809F3303E0F8C89F34031E03009F3501229F360200029F3704B71461199F4104000006755F340101",
         aci = "N"
     )
@@ -564,10 +592,12 @@ fun processSale(authData: AuthResponse, amount: String, taxAmount: String): Tran
     val engine = OkHttp.create()
     val client = Client(env, engine, security)
 
-    // Note! If using bbpos reader the emv data will be encrypted otherwise omit deviceModel
+    // Note! If using bbpos reader the trackData data will be encrypted otherwise omit deviceModel
     val transaction = Transaction( 
         isProcharge = true,
         isRetail = true,
+        mockApproval = false,
+        mockDecline = false,
         cardTypeIndicator = "C",    // C - Credit, D - Debit, P - Debit PrePaid 
         deviceModel = "CHB",        // BBPOS Reader Omit if not using bbpos reder
         trackData = "5204730000001003D25122010000000000000",

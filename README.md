@@ -8,6 +8,10 @@ If you are interested in processing payments with Electronic Payments click here
 ## Description
 Android archive library for payment processing with Electronic Payments Procharge API.
 
+## BBPOS EMV Reader Pairing
+If pairing for the first time the bluetooth PIN is located on the back of the reader. 
+![emv_reader_pairing.png](emv_reader_pairing.png)
+
 ## Project Modules
 ### procharge
 > This module will output an AAR file
